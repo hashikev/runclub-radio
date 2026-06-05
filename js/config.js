@@ -1,12 +1,13 @@
-// config.js — leave blank to run in Local mode (syncs browser tabs on one computer).
+// config.js — backend settings.
 //
-// PHASE 2 — make it work on real phones over the internet:
-//   1. Create a free project at https://supabase.com
-//   2. Project Settings -> API -> copy the Project URL and the "anon public" key
-//   3. Paste them below. That's it — realtime sync across phones turns on.
+// These are filled in for the live "runclub-radio" Supabase project, which turns
+// on realtime sync across real phones over the internet. The publishable key is
+// designed to be public (safe to ship in client code); it only allows the
+// realtime broadcast this app uses — no database access, no login.
 //
-// (Just realtime broadcast is used; no database tables or login required.)
+// To point at a different Supabase project, swap these two values. Leave them
+// blank to fall back to Local mode (syncs only tabs on one computer).
 export const CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: "",
+  supabaseUrl: "https://sfudquxrxsmbdxcxstzi.supabase.co",
+  supabaseAnonKey: "sb_publishable_7ZrIueUN6fAUWbQHoGYTXw__8tDlQ04",
 };

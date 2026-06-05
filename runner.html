@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e1116" />
+  <title>Run Club Radio</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo"><span class="dot"></span><h1>RUN CLUB RADIO</h1></div>
+
+    <!-- lobby: the required one-tap to start audio -->
+    <div id="lobby" class="card lobby">
+      <div class="big-emoji">🏃‍♂️💨</div>
+      <p class="muted">// earbuds in, volume up — lock to the pack</p>
+      <button id="join" class="primary big">▶ Drop in</button>
+      <p class="muted" style="margin-bottom:0">Then pocket your phone — it stays synced hands-free.</p>
+    </div>
+
+    <!-- player -->
+    <div id="player" class="card player" hidden>
+      <div class="row" style="justify-content:space-between">
+        <div id="kind" class="kind">Waiting…</div>
+        <div class="eq paused" id="eq"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div id="track" class="track">Waiting for the DJ…</div>
+      <div class="progress"><div id="bar"></div></div>
+      <div class="row">
+        <div class="sync grow"><span id="sync-dot" class="dot"></span><span id="sync-text">Connecting…</span></div>
+        <span id="time" class="muted">0:00 / 0:00</span>
+      </div>
+      <h2>Volume</h2>
+      <input type="range" id="vol" min="0" max="1" step="0.01" value="1" />
+      <div style="margin-top:14px"><button id="resync">Feeling off? Re-sync me</button></div>
+    </div>
+  </div>
+
+  <audio id="runner-audio" preload="auto"></audio>
+  <script type="module" src="js/runner.js"></script>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});</script>
+</body>
+</html>

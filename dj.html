@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e1116" />
+  <title>DJ — Run Club Radio</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo"><span class="dot"></span><h1>DJ Console</h1></div>
+    <p class="sub" id="mode">Local mode</p>
+
+    <div class="card">
+      <div class="now">
+        <span id="now-title">Nothing queued</span>
+        <div class="row" style="gap:12px;flex:0 0 auto">
+          <div class="eq paused" id="eq"><span></span><span></span><span></span><span></span><span></span></div>
+          <span id="now-time"></span>
+        </div>
+      </div>
+      <div class="transport" style="margin-top:14px">
+        <button id="prev">⏮</button>
+        <button id="play-pause" class="primary">▶︎ Play</button>
+        <button id="next">⏭</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <h2 style="margin:0" class="grow">Queue</h2>
+        <span class="pill"><span id="runner-count">0</span> running</span>
+      </div>
+      <ul class="list" id="queue"></ul>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">Add songs</h2>
+      <ul class="list" id="song-list"></ul>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">Drop a shout-out</h2>
+      <p class="muted" style="margin-top:0">Plays on every phone in sync, then rolls into the next song.</p>
+      <ul class="list" id="shout-list"></ul>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">Share with runners</h2>
+      <div class="row">
+        <input type="text" id="share-link" readonly class="grow" />
+        <button id="copy-link">Copy link</button>
+      </div>
+      <p class="muted">Send this link to your runners. They tap it, tap “Tap in,” and they’re synced.</p>
+    </div>
+  </div>
+
+  <audio id="dj-audio" preload="auto"></audio>
+  <script type="module" src="js/dj.js"></script>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});</script>
+</body>
+</html>

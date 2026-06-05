@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e1116" />
+  <title>Run Club Radio</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo"><span class="dot"></span><h1>RUN CLUB RADIO</h1></div>
+    <p class="sub">// sync the pack to one beat — same track, same second, every phone</p>
+
+    <div class="choose">
+      <a href="dj.html?room=main">
+        <div class="card">
+          <span class="emoji">🎛️</span>
+          <div>
+            <div class="t">Run the decks</div>
+            <div class="d">Cue the playlist, drop shout-outs, set the pace.</div>
+          </div>
+        </div>
+      </a>
+      <a href="runner.html?room=main">
+        <div class="card">
+          <span class="emoji">🏃‍♂️💨</span>
+          <div>
+            <div class="t">Join the pack</div>
+            <div class="d">Tap in and lock to the DJ's beat, hands-free.</div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <h2>Tip</h2>
+    <p class="muted">On your phone, use “Add to Home Screen” to run it fullscreen like an app and keep audio going with the screen off.</p>
+  </div>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});</script>
+</body>
+</html>

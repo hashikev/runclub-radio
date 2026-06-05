@@ -1,7 +1,7 @@
 // dj.js — the DJ console. You build a queue, control playback, and drop shout-outs.
-import { LIBRARY } from "./library.js";
 import { createTransport } from "./transport.js";
 import { SyncedPlayer, expectedSec } from "./sync.js";
+import { loadCatalog, uploadFiles, deleteTrack, isCloud } from "./catalog.js";
 
 const room = new URLSearchParams(location.search).get("room") || "main";
 const transport = createTransport(room);
@@ -21,9 +21,8 @@ const fmt = (s) => {
   return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
 };
 
-// Split the library into songs vs shout-outs for the two pickers.
-const SONGS = LIBRARY.filter((t) => t.kind === "track");
-const SHOUTS = LIBRARY.filter((t) => t.kind === "shoutout");
+// The available catalog (bundled demos + uploaded tracks), loaded async below.
+let CATALOG = [];
 
 // ---------- presence: count connected runners ----------
 const seen = new Map(); // id -> last-seen clock ms
@@ -56,21 +55,45 @@ $("mode").textContent = transport.constructor.name === "SupabaseTransport"
   : "Local mode — syncs tabs on this computer (see README to go live)";
 
 // ---------- build the library pickers ----------
+function trackRow(t, actionLabel, onAction) {
+  const li = document.createElement("li");
+  const span = document.createElement("span");
+  span.className = "q-title";
+  span.textContent = (t.kind === "shoutout" ? "📣 " : "") + t.title; // textContent = no injection
+  const actions = document.createElement("span");
+  actions.className = "q-actions";
+  const act = document.createElement("button");
+  act.textContent = actionLabel;
+  act.onclick = () => onAction(t);
+  actions.appendChild(act);
+  if (t.uploaded) {
+    const del = document.createElement("button");
+    del.textContent = "✕";
+    del.title = "Delete this upload for everyone";
+    del.onclick = async () => {
+      if (!confirm(`Delete "${t.title}" for everyone?`)) return;
+      del.disabled = true;
+      await deleteTrack(t);
+      await refreshCatalog();
+    };
+    actions.appendChild(del);
+  }
+  li.appendChild(span);
+  li.appendChild(actions);
+  return li;
+}
+
 function renderLibrary() {
-  $("song-list").innerHTML = "";
-  for (const t of SONGS) {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>${t.title}</span><button>Add</button>`;
-    li.querySelector("button").onclick = () => addToQueue(t);
-    $("song-list").appendChild(li);
-  }
-  $("shout-list").innerHTML = "";
-  for (const t of SHOUTS) {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>📣 ${t.title}</span><button>Now</button>`;
-    li.querySelector("button").onclick = () => dropShoutoutNow(t);
-    $("shout-list").appendChild(li);
-  }
+  const songs = CATALOG.filter((t) => t.kind === "track");
+  const shouts = CATALOG.filter((t) => t.kind === "shoutout");
+  const sl = $("song-list");
+  sl.innerHTML = "";
+  if (!songs.length) sl.innerHTML = '<li class="muted">No songs yet — upload some above.</li>';
+  for (const t of songs) sl.appendChild(trackRow(t, "Add", addToQueue));
+  const hl = $("shout-list");
+  hl.innerHTML = "";
+  if (!shouts.length) hl.innerHTML = '<li class="muted">No shout-outs yet — upload one above.</li>';
+  for (const t of shouts) hl.appendChild(trackRow(t, "Now", dropShoutoutNow));
 }
 
 // ---------- DJ actions ----------
@@ -189,8 +212,39 @@ setInterval(() => {
   $("now-time").textContent = `${fmt(pos)} / ${fmt(dur)}`;
 }, 250);
 
+// ---------- catalog load + upload wiring ----------
+async function refreshCatalog() {
+  CATALOG = await loadCatalog();
+  renderLibrary();
+}
+const setUpStatus = (msg) => ($("upload-status").textContent = msg);
+$("refresh-catalog").onclick = refreshCatalog;
+
+$("upload-btn").onclick = async () => {
+  const input = $("file-input");
+  if (!input.files || !input.files.length) return setUpStatus("Pick some audio files first.");
+  if (!isCloud()) return setUpStatus("Uploads need the online backend — you're in Local mode.");
+  const asShout = $("as-shout").checked;
+  $("upload-btn").disabled = true;
+  try {
+    const res = await uploadFiles(input.files, asShout, (i, n, name) =>
+      setUpStatus(`Uploading ${i}/${n}: ${name}…`)
+    );
+    const ok = res.filter((r) => r.ok).length;
+    const failed = res.filter((r) => !r.ok);
+    setUpStatus(`✓ Uploaded ${ok} file${ok === 1 ? "" : "s"}` +
+      (failed.length ? ` · ${failed.length} failed (${failed[0].error || "error"})` : ""));
+    input.value = "";
+    await refreshCatalog();
+  } catch (e) {
+    setUpStatus("Upload error: " + (e?.message || e));
+  } finally {
+    $("upload-btn").disabled = false;
+  }
+};
+
 // Re-broadcast state every 3s so late-joining runners sync up quickly.
 setInterval(() => player.heartbeat(), 3000);
 
-renderLibrary();
 render(player.state);
+refreshCatalog();

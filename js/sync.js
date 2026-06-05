@@ -36,7 +36,6 @@ export class SyncedPlayer {
     this.loadedUrl = null;
 
     this.audio.preservesPitch = true; // small speed nudges shouldn't change pitch
-    this.audio.crossOrigin = "anonymous";
 
     transport.onMessage((msg) => this._onMessage(msg));
     this._timer = setInterval(() => this.tick(), TICK_MS);

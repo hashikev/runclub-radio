@@ -9,6 +9,13 @@ No accounts. No app store. No Spotify needed (and on purpose — Spotify's rules
 this kind of synced group broadcast; using your own audio means *you* control
 everything, including the shout-outs).
 
+## 🌐 It's live
+
+- **DJ console:** https://hashikev.github.io/runclub-radio/dj.html
+- **Runner link (share this):** https://hashikev.github.io/runclub-radio/runner.html
+- Realtime sync runs on a free Supabase project (`runclub-radio`). Phones sync over
+  the internet automatically — no setup for runners, they just open the link.
+
 ---
 
 ## Run it (on your computer)
@@ -47,23 +54,18 @@ placeholders — delete them once you add your own.
 
 ---
 
-## Phase 2 — make it work on real phones 📱
+## Updating the live site
 
-Two small steps: a realtime backend (so phones can talk) and putting the files online.
+It's already deployed (GitHub Pages + Supabase). To push changes:
 
-### A. Turn on realtime sync (free)
-1. Create a free project at <https://supabase.com>.
-2. **Project Settings → API** → copy the **Project URL** and the **anon public** key.
-3. Paste both into **`js/config.js`**. Done — it switches from Local to Online mode
-   automatically (it only uses realtime broadcast; no database or login).
+```bash
+node scan-tracks.js     # if you changed the tracks/ folder
+git add -A && git commit -m "update" && git push
+```
 
-### B. Put the app online
-Host this folder anywhere that serves static files + your audio over HTTPS — e.g.
-**Netlify** or **Vercel** (drag-and-drop the folder), or GitHub Pages. You'll get a
-URL like `https://your-run-club.netlify.app`. Share `…/runner.html` with your runners.
-
-That's it: you open `…/dj.html`, share the runner link, everyone taps in on their
-phones and runs in sync.
+GitHub Pages redeploys in ~1 minute. The realtime backend lives in the Supabase
+project `runclub-radio`; its URL + public key are in `js/config.js`. (Leaving those
+blank falls back to Local mode for offline tinkering.)
 
 ---
 

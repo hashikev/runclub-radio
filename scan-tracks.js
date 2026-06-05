@@ -22,21 +22,30 @@ function prettyTitle(file) {
     .basename(file, path.extname(file))
     .replace(/^shoutout[-_ ]?/i, "")
     .replace(/^demo[-_ ]?\d*[-_ ]?/i, "")
+    .replace(/^\d+[\s._-]+/, "")        // strip leading track numbers like "01 - "
     .replace(/[-_]+/g, " ")
     .trim()
     .replace(/\b\w/g, (c) => c.toUpperCase()) || path.basename(file);
 }
 
-function probeDuration(file) {
+// Pull duration + the embedded Title/Artist tags (ID3 etc.) in one ffprobe call,
+// so a file named "01_track.mp3" still shows as "Eye of the Tiger — Survivor".
+function probeMeta(file) {
   try {
     const out = execSync(
-      `ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "${file}"`,
+      `ffprobe -v error -show_entries format=duration:format_tags=title,artist -of json "${file}"`,
       { encoding: "utf8" }
-    ).trim();
-    const d = parseFloat(out);
-    return Number.isFinite(d) ? Math.round(d * 100) / 100 : null;
+    );
+    const fmt = JSON.parse(out).format || {};
+    const d = parseFloat(fmt.duration);
+    const tags = fmt.tags || {};
+    return {
+      duration: Number.isFinite(d) ? Math.round(d * 100) / 100 : null,
+      title: (tags.title || tags.TITLE || "").trim(),
+      artist: (tags.artist || tags.ARTIST || "").trim(),
+    };
   } catch {
-    return null; // ffprobe missing or unreadable — browser will learn duration at load time
+    return { duration: null, title: "", artist: "" };
   }
 }
 
@@ -47,12 +56,18 @@ const files = fs
 
 const library = files.map((f, i) => {
   const isShout = /^shoutout/i.test(f);
+  const meta = probeMeta(path.join(TRACKS_DIR, f));
+  // Prefer the embedded title; for songs, append the artist when we have one.
+  let title = meta.title || prettyTitle(f);
+  if (!isShout && meta.artist && !title.toLowerCase().includes(meta.artist.toLowerCase())) {
+    title = `${title} — ${meta.artist}`;
+  }
   return {
     id: (isShout ? "shout-" : "track-") + i,
-    title: prettyTitle(f),
+    title,
     url: "tracks/" + encodeURIComponent(f),
     kind: isShout ? "shoutout" : "track",
-    duration: probeDuration(path.join(TRACKS_DIR, f)),
+    duration: meta.duration,
   };
 });
 
